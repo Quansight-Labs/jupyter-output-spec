@@ -10,7 +10,7 @@ Currently there are many different rendering engines for Jupyter notebook output
 7. VS Code
 
 What this means is that if you have a custom way of rendering some widget (plotly, vega, etc) you maybe have to build
-integration for ALL of these seperately! It's insane!
+integration for ALL of these separately! It's insane!
 
 Jupyter Widgets get's around this by providing a common base and [uses require.js](https://ipywidgets.readthedocs.io/en/stable/examples/Widget%20Custom.html) to let you provide custom renderers and it [uses a CDN](https://github.com/jupyter-widgets/ipywidgets/issues/1627) to grab the JS files.
 

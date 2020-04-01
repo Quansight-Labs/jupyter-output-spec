@@ -40,16 +40,8 @@ So what I see here is at the core, for a mime render extension author, you shoul
 type Comm = {
     send(data: object): Promise<void>;
     close(data: object): Promise<void>;
+    // Iterator ends on close
     msgs: AsyncIterable<object>
-    // resolved on close
-    close: Promise<object>
-}
-
-/**
- * Some subset of JupyterLab's IKernelConnection
- */
-type Kernel = {
-  createComm(targetName: string, data: object): Comm;
 }
 
 /**
@@ -60,18 +52,15 @@ type Kernel = {
  */
 type RenderFn<T extends object> = (options: {
     // the actual mime data
-    initialData: T,
+    data: T,
     /// any updates of the data from update display
     dataUpdates: AsyncIterable<T>,
     // The initial node for rendering
-    initialNode: Element,
+    node: Element,
     // Any changes of the node
     nodeUpdates: AsyncIterable<{add: Element} | {remove: Element}>
-   
-    // the current kernel or null if none connected
-    initialKernel: Kernel | null;
-    // updates on the kernel
-    kernelUpdates: AsyncIterable<Kernel | null>
+    // will resolve to error if not connected to kernel
+    createComm(targetName: string, data: object): Promise<Comm>;
 }) => AsyncIterable<{data: T, node: Element}>
 ```
 

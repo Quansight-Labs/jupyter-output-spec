@@ -32,8 +32,7 @@ And in terms of hosting it should be able to be run in both:
 1. prebuilt mode, like JupyterLab is today, where you already have the renderer loaded
 2. Dynamic mode, like Jupyter Widgets, to pull new renderers from a CDN.
 
-So what I see here is at the core, for a mime render extension author, you should write a function that looks like this (using RXJS Observables for semantic
-simplicity but we could change to not require them):
+So what I see here is at the core, for a mime render extension author, you should write a function that looks like this:
 
 
 ```typescript
@@ -41,7 +40,7 @@ simplicity but we could change to not require them):
 type Comm = {
     send(data: object): Promise<void>;
     close(data: object): Promise<void>;
-    msgs: Observable<object>
+    msgs: AsyncIterable<object>
     // resolved on close
     close: Promise<object>
 }
@@ -51,33 +50,52 @@ type Comm = {
  */
 type Kernel = {
   createComm(targetName: string, data: object): Comm;
-  // registers/unregisters on observable subscription
-  registerCommTarget(targetName: string): Observable<{
-    data: object,
-    comm: Comm
-  }>;
 }
 
 /**
  * Renders the `data` to the `nodes` using the `kernel`.
  * 
- * Returns an observable that has a new item after finishing rendering
- * each new data.
+ * Returns an iterator that has a new item after finishing rendering
+ * each new data/node combination.
  */
 type RenderFn<T extends object> = (options: {
     // the actual mime data
-    data: Observable<T>,
-    // the nodes we want to render on
-    nodes: Observable<Array<Element>>
+    initialData: T,
+    /// any updates of the data from update display
+    dataUpdates: AsyncIterable<T>,
+    // The initial node for rendering
+    initialNode: Element,
+    // Any changes of the node
+    nodeUpdates: AsyncIterable<{add: Element} | {remove: Element}>
+   
     // the current kernel or null if none connected
-    kernel: Observable<Kernel | null>
-}) => Observable<null>
+    initialKernel: Kernel | null;
+    // updates on the kernel
+    kernelUpdates: AsyncIterable<Kernel | null>
+}) => AsyncIterable<{data: T, node: Element}>
 ```
 
 Cool, so we could make this "interface" and make a way that, given one of these,
 we could add a renderer to JupyterLab using a regular extension. However, that doesn't help address all the other platforms. 
 
-So I propose a new `mimeType` called `application/vnd.jupyter.extensible+json` which should have two keys: `package` and `data`. The package should be an NPM package name that we should be able to fetch using [`jsdelivr`](https://www.jsdelivr.com/features) that has a default ES6 export of this function.
+So I propose a new `mimeType` called `application/vnd.jupyter.extensible+json`:
+
+```typescript
+// data for mimetype `application/vnd.jupyter.extensible+json`
+type JupyterExtensibleData = {
+  // reference to a package that shold return a an ES6 module with a default export of the function
+  package: {
+    // URL to fetch the package from
+    // Should return an ES6 module
+    // could be jsdeliver URL for this package 
+    url: string;
+    // optional name of package to use, if we have already built with this package,
+    // use this instead of the naem
+    name?: string;
+  }
+  data: object;
+}
+```
 
 In JupyterLab, we can build the render of this mime type to also allow extension, so that if you want to build JupyterLab with this renderer "pre-built" you can,
 in which case it won't fetch the package. 

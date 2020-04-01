@@ -73,18 +73,10 @@ So I propose a new `mimeType` called `application/vnd.jupyter.extensible+json`:
 // data for mimetype `application/vnd.jupyter.extensible+json`
 type JupyterExtensibleData = {
   // reference to a package that shold return a an ES6 module with a default export of the function
-  package: {
-    // URL to fetch the package from
-    // Should return an ES6 module
-    // could be jsdeliver URL for this package 
-    url: string;
-    // optional name of package to use, if we have already built with this package,
-    // use this instead of the naem
-    name?: string;
-  }
+  url: string;
   data: object;
 }
 ```
 
 In JupyterLab, we can build the render of this mime type to also allow extension, so that if you want to build JupyterLab with this renderer "pre-built" you can,
-in which case it won't fetch the package. 
+in which case it won't fetch the package. We can do this by allowing you to register some function that corresponds to a URL to say use this function instead of fetching that es6 module URL.

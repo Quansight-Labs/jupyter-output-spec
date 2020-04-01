@@ -77,7 +77,24 @@ type RenderFn<T extends object> = (options: {
 Cool, so we could make this "interface" and make a way that, given one of these,
 we could add a renderer to JupyterLab using a regular extension. However, that doesn't help address all the other platforms. 
 
-So I propose a new `mimeType` called `application/vnd.jupyter.extensible+json` which should have two keys: `package` and `data`. The package should be an NPM package name that we should be able to fetch using [`jsdelivr`](https://www.jsdelivr.com/features) that has a default ES6 export of this function.
+So I propose a new `mimeType` called `application/vnd.jupyter.extensible+json`:
+
+```typescript
+// data for mimetype `application/vnd.jupyter.extensible+json`
+type JupyterExtensibleData = {
+  // reference to a package that shold return a an ES6 module with a default export of the function
+  package: {
+    // URL to fetch the package from
+    // Should return an ES6 module
+    // could be jsdeliver URL for this package 
+    url: string;
+    // optional name of package to use, if we have already built with this package,
+    // use this instead of the naem
+    name?: string;
+  }
+  data: object;
+}
+```
 
 In JupyterLab, we can build the render of this mime type to also allow extension, so that if you want to build JupyterLab with this renderer "pre-built" you can,
 in which case it won't fetch the package. 

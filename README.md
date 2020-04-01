@@ -32,8 +32,7 @@ And in terms of hosting it should be able to be run in both:
 1. prebuilt mode, like JupyterLab is today, where you already have the renderer loaded
 2. Dynamic mode, like Jupyter Widgets, to pull new renderers from a CDN.
 
-So what I see here is at the core, for a mime render extension author, you should write a function that looks like this (using RXJS Observables for semantic
-simplicity but we could change to not require them):
+So what I see here is at the core, for a mime render extension author, you should write a function that looks like this:
 
 
 ```typescript
@@ -41,7 +40,7 @@ simplicity but we could change to not require them):
 type Comm = {
     send(data: object): Promise<void>;
     close(data: object): Promise<void>;
-    msgs: Observable<object>
+    msgs: AsyncIterable<object>
     // resolved on close
     close: Promise<object>
 }
@@ -51,27 +50,22 @@ type Comm = {
  */
 type Kernel = {
   createComm(targetName: string, data: object): Comm;
-  // registers/unregisters on observable subscription
-  registerCommTarget(targetName: string): Observable<{
-    data: object,
-    comm: Comm
-  }>;
 }
 
 /**
  * Renders the `data` to the `nodes` using the `kernel`.
  * 
- * Returns an observable that has a new item after finishing rendering
- * each new data.
+ * Returns an iterator that has a new item after finishing rendering
+ * each new data/node combination.
  */
 type RenderFn<T extends object> = (options: {
     // the actual mime data
-    data: Observable<T>,
+    data: AsyncIterable<T>,
     // the nodes we want to render on
-    nodes: Observable<Array<Element>>
+    nodes: AsyncIterable<Array<Element>>
     // the current kernel or null if none connected
-    kernel: Observable<Kernel | null>
-}) => Observable<null>
+    kernel: AsyncIterable<Kernel | null>
+}) => AsyncIterable<{data: T, node: Element}>
 ```
 
 Cool, so we could make this "interface" and make a way that, given one of these,

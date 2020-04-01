@@ -60,11 +60,18 @@ type Kernel = {
  */
 type RenderFn<T extends object> = (options: {
     // the actual mime data
-    data: AsyncIterable<T>,
-    // the nodes we want to render on
-    nodes: AsyncIterable<Array<Element>>
+    initialData: T,
+    /// any updates of the data from update display
+    dataUpdates: AsyncIterable<T>,
+    // The initial node for rendering
+    initialNode: Element,
+    // Any changes of the node
+    nodeUpdates: AsyncIterable<{add: Element} | {remove: Element}>
+   
     // the current kernel or null if none connected
-    kernel: AsyncIterable<Kernel | null>
+    initialKernel: Kernel | null;
+    // updates on the kernel
+    kernelUpdates: AsyncIterable<Kernel | null>
 }) => AsyncIterable<{data: T, node: Element}>
 ```
 

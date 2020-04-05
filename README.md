@@ -57,16 +57,28 @@ type ExtendableEvent {
   waitUntil(promise: Promise<void>): void;
 }
 
-
+/**
+ * An update about the display data.
+ * The `dataSet` and `metadataSet` are a mapping of keys to values which
+ * are updates for the keys in the data and metadata.
+ * The `dataDeleted` and `metadataDeleted` are keys that are deleted from them.
+ * A key that is deleted should not be in the updated mappings.
+ */
 type OutputEvent extends ExtendableEvent {
-  readonly key: 'metadata' | 'data';
-  readonly field: string;
-  readonly value: 'delete' | ['set', object]
+  readonly dataSet: Data;
+  readonly metadataSet: Data;
+  readonly metadataDeleted: Array<string>;
+  readonly dataDeleted: Array<string>;
 }
 
-type NodeEvent extends ExtendableEvent{
-  readonly node: Element;
-  readonly type: 'add' | 'remove';
+/**
+ * An update about the nodes you have access to.
+ * The new nodes will be the set of current nodes, minus the removed nodes, plus the added nodes.
+ * A node should not be in the added and removed arrays.
+ */
+type NodeEvent extends ExtendableEvent {
+  added: Array<Element>;
+  removed: Array<Element>;
 }
 
 /**

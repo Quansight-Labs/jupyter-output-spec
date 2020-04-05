@@ -65,10 +65,10 @@ type ExtendableEvent {
  * A key that is deleted should not be in the updated mappings.
  */
 type OutputEvent extends ExtendableEvent {
-  readonly dataSet: Data;
-  readonly metadataSet: Data;
-  readonly metadataDeleted: Array<string>;
-  readonly dataDeleted: Array<string>;
+  readonly dataSet?: Data;
+  readonly metadataSet?: Data;
+  readonly metadataDeleted?: Array<string>;
+  readonly dataDeleted?: Array<string>;
 }
 
 /**
@@ -77,8 +77,8 @@ type OutputEvent extends ExtendableEvent {
  * A node should not be in the added and removed arrays.
  */
 type NodeEvent extends ExtendableEvent {
-  added: Array<Element>;
-  removed: Array<Element>;
+  added?: Array<Element>;
+  removed?: Array<Element>;
 }
 
 /**

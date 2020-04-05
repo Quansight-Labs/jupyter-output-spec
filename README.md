@@ -37,11 +37,16 @@ So what I see here is at the core, for a mime render extension author, you shoul
 
 ```typescript
 
+type CommMessage {
+  readonly data: {[key: string]: object};
+  readonly buffers?: ArrayBuffer[];
+}
+
 type Comm = {
-    send(data: object): Promise<void>;
-    close(data: object): Promise<void>;
+    send(data: CommMessage): Promise<void>;
+    close(data: CommMessage): Promise<void>;
     // Iterator ends on close
-    msgs: AsyncIterable<object>
+    readonly msgs: AsyncIterable<CommMessage>
 }
 
 /**

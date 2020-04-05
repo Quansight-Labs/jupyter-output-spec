@@ -49,6 +49,25 @@ type Comm = {
     readonly msgs: AsyncIterable<CommMessage>
 }
 
+
+type DataEvent<T> {
+  readonly data: T;
+  // optionally call this with a promise if
+  // you won't finished processing the data syncronously
+  // to let the outer process know when you are done
+  waitUntil(promise: Promise<void>): void;
+}
+
+type NodeEvent {
+  readonly node: Element;
+  readonly type: 'add' | 'remove'
+  // optionally call this with a promise if
+  // you won't finished processing the node update syncronously
+  // to let the outer process know when you are done
+  // like in https://developer.mozilla.org/en-US/docs/Web/API/FetchEvent
+  waitUntil(promise: Promise<void>): void;
+}
+
 /**
  * Renders the `data` to the `nodes` using the `kernel`.
  * 
@@ -57,16 +76,16 @@ type Comm = {
  */
 type RenderFn<T extends object> = (options: {
     // the actual mime data
-    data: T,
+    data: DataEvent<T>,
     /// any updates of the data from update display
-    dataUpdates: AsyncIterable<T>,
+    dataUpdates: AsyncIterable<DataEvent<T>>,
     // The initial node for rendering
     node: Element,
     // Any changes of the node
-    nodeUpdates: AsyncIterable<{add: Element} | {remove: Element}>
+    nodeUpdates: AsyncIterable<NodeEvent>
     // will resolve to error if not connected to kernel
     createComm(targetName: string, data: object): Promise<Comm>;
-}) => AsyncIterable<{data: T, node: Element}>
+}) => void>
 ```
 
 Cool, so we could make this "interface" and make a way that, given one of these,

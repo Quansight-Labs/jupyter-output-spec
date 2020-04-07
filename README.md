@@ -89,11 +89,12 @@ type NodeEvent extends ExtendableEvent {
   removed?: Array<Element>;
 }
 
+type CleanupFn = () => Promise<void>;
+
 /**
- * Renders the `data` to the `nodes` using the `kernel`.
+ * Renders the `data` to the `node`.
  * 
- * Returns an iterator that has a new item after finishing rendering
- * each new data/node combination.
+ * Optionally returns a cleanup function that is called to let it try to clean up when it's done rendering.
  */
 type RenderFn extends ExtendableEvent = (options: {
     output: {
@@ -113,7 +114,7 @@ type RenderFn extends ExtendableEvent = (options: {
     listenNodeEvents: () => AsyncIterable<NodeEvent>
     // will resolve to error if not connected to kernel
     createComm(targetName: string, data: object): Promise<Comm>;
-}) => void>
+}) => (undefined | CleanupFn)>
 ```
 
 ## MIME Type

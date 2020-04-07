@@ -113,13 +113,13 @@ you would implement this function. Now if we were just targeting JupyterLab, we 
 your function adds adds a MIME Renderer for your plugin. But that doesn't help us with our other platforms. So we need
 a platform agnostic way of signalling, in an output, which renderer you would like to use.
 
-So we could use a new MIME type called (tentatively) `application/vnd.jupyter.renderer` that should have as it's data
+So we could use a new MIME type called (tentatively) `application/vnd.jupyter.renderer-alpha` that should have as it's data
 a URL that points to a JS module with a default export of this function type. So your mime bundle might look like:
-So I propose a new `mimeType` called `application/vnd.jupyter.renderer` that should :
+So I propose a new `mimeType` called `application/vnd.jupyter.renderer-alpha` that should :
 
 ```json
 {
-   "application/vnd.jupyter.renderer": "http://cdn.com/my-library.js",
+   "application/vnd.jupyter.renderer-alpha": "http://cdn.com/my-library.js",
    "some-other-mimetype": "whatever-data"
 }
 ```

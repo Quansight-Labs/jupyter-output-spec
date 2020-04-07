@@ -1,3 +1,7 @@
+# Jupyter Extensible Renderers
+
+## Story
+
 Currently there are many different rendering engines for Jupyter notebook outputs. Off the top of my head...
 
 
@@ -19,6 +23,7 @@ Another way to get around this is to use a more general output, like html, and j
 
 However, a limitation of this is that you don't have a way to get access to the kernel, so you can't connect to comms. 
 
+## Requirements
 
 So here is a list of requirements I would have for any cross-implementation MIME rendering thingy:
 
@@ -31,6 +36,9 @@ And in terms of hosting it should be able to be run in both:
 
 1. prebuilt mode, like JupyterLab is today, where you already have the renderer loaded
 2. Dynamic mode, like Jupyter Widgets, to pull new renderers from a CDN.
+
+
+## Spec
 
 So what I see here is at the core, for a mime render extension author, you should write a function that looks like this:
 
@@ -108,6 +116,8 @@ type RenderFn extends ExtendableEvent = (options: {
 }) => void>
 ```
 
+## MIME Type
+
 Now that we have this function signature, as someone who is authoring a rendering library (like ipywidgets, plotly, etc)
 you would implement this function. Now if we were just targeting JupyterLab, we could make a helper library that injests
 your function adds adds a MIME Renderer for your plugin. But that doesn't help us with our other platforms. So we need
@@ -124,5 +134,12 @@ So I propose a new `mimeType` called `application/vnd.jupyter.renderer-alpha` th
 }
 ```
 
+## JupyterLab
+
 In JupyterLab, we can build the render of this mime type to also allow extension, so that if you want to build JupyterLab with this renderer "pre-built" you can,
 in which case it won't fetch the package. We can do this by allowing you to register some function that corresponds to a URL to say use this function instead of fetching that es6 module URL.
+
+
+## Sample Implementations
+
+* [JupyterLab](https://github.com/blois/js-module-renderer)

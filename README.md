@@ -37,8 +37,10 @@ So what I see here is at the core, for a mime render extension author, you shoul
 
 ```typescript
 
+type Data = {[key: string]: object};
+
 type CommMessage {
-  readonly data: {[key: string]: object};
+  readonly data: Data;
   readonly buffers?: ArrayBuffer[];
 }
 
@@ -50,22 +52,33 @@ type Comm = {
 }
 
 
-type DataEvent<T> {
-  readonly data: T;
-  // optionally call this with a promise if
-  // you won't finished processing the data syncronously
-  // to let the outer process know when you are done
+type ExtendableEvent {
+  // call this when you are done processing this event, if it is not processesd synchronously
   waitUntil(promise: Promise<void>): void;
 }
 
-type NodeEvent {
-  readonly node: Element;
-  readonly type: 'add' | 'remove'
-  // optionally call this with a promise if
-  // you won't finished processing the node update syncronously
-  // to let the outer process know when you are done
-  // like in https://developer.mozilla.org/en-US/docs/Web/API/FetchEvent
-  waitUntil(promise: Promise<void>): void;
+/**
+ * An update about the display data.
+ * The `dataSet` and `metadataSet` are a mapping of keys to values which
+ * are updates for the keys in the data and metadata.
+ * The `dataDeleted` and `metadataDeleted` are keys that are deleted from them.
+ * A key that is deleted should not be in the updated mappings.
+ */
+type OutputEvent extends ExtendableEvent {
+  readonly dataSet?: Data;
+  readonly metadataSet?: Data;
+  readonly metadataDeleted?: Array<string>;
+  readonly dataDeleted?: Array<string>;
+}
+
+/**
+ * An update about the nodes you have access to.
+ * The new nodes will be the set of current nodes, minus the removed nodes, plus the added nodes.
+ * A node should not be in the added and removed arrays.
+ */
+type NodeEvent extends ExtendableEvent {
+  added?: Array<Element>;
+  removed?: Array<Element>;
 }
 
 /**
@@ -74,31 +87,37 @@ type NodeEvent {
  * Returns an iterator that has a new item after finishing rendering
  * each new data/node combination.
  */
-type RenderFn<T extends object> = (options: {
-    // the actual mime data
-    data: DataEvent<T>,
-    /// any updates of the data from update display
-    dataUpdates: AsyncIterable<DataEvent<T>>,
+type RenderFn extends ExtendableEvent = (options: {
+    output: {
+      // mime bundle
+      data: Data,
+      metadata: Data,
+    }
+    outputEvents: AsyncIterable<OutputEvent>,
+    // make a change to the output
+    emitOutputEvent: (event: OutputEvent) => void,
     // The initial node for rendering
     node: Element,
     // Any changes of the node
-    nodeUpdates: AsyncIterable<NodeEvent>
+    nodeEvents: AsyncIterable<NodeEvent>
     // will resolve to error if not connected to kernel
     createComm(targetName: string, data: object): Promise<Comm>;
 }) => void>
 ```
 
-Cool, so we could make this "interface" and make a way that, given one of these,
-we could add a renderer to JupyterLab using a regular extension. However, that doesn't help address all the other platforms. 
+Now that we have this function signature, as someone who is authoring a rendering library (like ipywidgets, plotly, etc)
+you would implement this function. Now if we were just targeting JupyterLab, we could make a helper library that injests
+your function adds adds a MIME Renderer for your plugin. But that doesn't help us with our other platforms. So we need
+a platform agnostic way of signalling, in an output, which renderer you would like to use.
 
-So I propose a new `mimeType` called `application/vnd.jupyter.extensible+json`:
+So we could use a new MIME type called (tentatively) `application/vnd.jupyter.renderer` that should have as it's data
+a URL that points to a JS module with a default export of this function type. So your mime bundle might look like:
+So I propose a new `mimeType` called `application/vnd.jupyter.renderer` that should :
 
-```typescript
-// data for mimetype `application/vnd.jupyter.extensible+json`
-type JupyterExtensibleData = {
-  // reference to a package that shold return a an ES6 module with a default export of the function
-  url: string;
-  data: object;
+```json
+{
+   "application/vnd.jupyter.renderer": "http://cdn.com/my-library.js",
+   "some-other-mimetype": "whatever-data"
 }
 ```
 

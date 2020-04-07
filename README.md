@@ -93,13 +93,16 @@ type RenderFn extends ExtendableEvent = (options: {
       data: Data,
       metadata: Data,
     }
-    outputEvents: AsyncIterable<OutputEvent>,
+    // calling this function will given you the changes in the output
+    // If you don't call it, your function will be re-rendered on every change with the new output
+    listenOutputEvents: () => AsyncIterable<OutputEvent>,
     // make a change to the output
     emitOutputEvent: (event: OutputEvent) => void,
     // The initial node for rendering
     node: Element,
-    // Any changes of the node
-    nodeEvents: AsyncIterable<NodeEvent>
+    // calling this function will given you the changes in the nodes you should render to.
+    // If you don't call it, your function will be re-rendered for each new node.
+    listenNodeEvents: () => AsyncIterable<NodeEvent>
     // will resolve to error if not connected to kernel
     createComm(targetName: string, data: object): Promise<Comm>;
 }) => void>

@@ -109,8 +109,14 @@ type RenderFn extends ExtendableEvent = (options: {
     emitOutputEvent: (event: OutputEvent) => void,
     // The initial node for rendering
     node: Element,
+    
     // calling this function will given you the changes in the nodes you should render to.
     // If you don't call it, your function will be re-rendered for each new node.
+    //
+    // These changes happen when the frontend adds a new place to render this output,
+    // like in JupyterLab when you open an output in a new window.
+    // by allowing you to handle both these nodes in one function, you can synchronize
+    // views between them without going through the backend or writing to globals
     listenNodeEvents: () => AsyncIterable<NodeEvent>
     // will resolve to error if not connected to kernel
     createComm(targetName: string, data: object): Promise<Comm>;

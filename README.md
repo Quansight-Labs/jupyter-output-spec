@@ -49,7 +49,7 @@ type Data = {[key: string]: object};
 
 type CommMessage {
   readonly data: Data;
-  readonly buffers?: ArrayBuffer[];
+  readonly buffers?: (ArrayBuffer | ArrayBufferView)[];
 }
 
 type Comm = {

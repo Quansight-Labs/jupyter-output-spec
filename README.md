@@ -67,16 +67,16 @@ type ExtendableEvent {
 
 /**
  * An update about the display data.
- * The `dataSet` and `metadataSet` are a mapping of keys to values which
+ * The `dataUpdated` and `metadataUpdated` are a mapping of keys to values which
  * are updates for the keys in the data and metadata.
  * The `dataDeleted` and `metadataDeleted` are keys that are deleted from them.
  * A key that is deleted should not be in the updated mappings.
  */
 type OutputEvent extends ExtendableEvent {
-  readonly dataSet?: Data;
-  readonly metadataSet?: Data;
-  readonly metadataDeleted?: Array<string>;
+  readonly dataUpdated?: Data;
   readonly dataDeleted?: Array<string>;
+  readonly metadataUpdated?: Data;
+  readonly metadataDeleted?: Array<string>;
 }
 
 /**

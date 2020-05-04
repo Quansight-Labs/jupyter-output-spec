@@ -27,7 +27,7 @@ So today, to support comms on these different renderers you either have to wrap 
 So here is a list of requirements I would have for any cross-implementation MIME rendering thingy:
 
 1. Supports comms (including changing kernels, no kernel available)
-2. Support multiple instances of one output (happens in JupyterLab when you open an output in a new tab. Now you have it mounted in two nodes.)
+2. Support multiple instances of one output (happens in JupyterLab when you open an output in a new tab. Now you have it mounted in two nodes). If your renderer desires it, it should be able to syncronize state between these outputs without needing to use comms or globals.
 3. Support data update (it should be able to pick up on updates to the mime data, without a full re-render)
 
 
@@ -109,13 +109,13 @@ type RenderFn extends ExtendableEvent = (options: {
     // The initial node for rendering
     node: Element,
     
-    // calling this function will given you the changes in the nodes you should render to.
-    // If you don't call it, your function will be re-rendered for each new node.
+    
+    // Use this function if you want to synchronize state between multiple views of this renderer.
+    // The iterable will be updated whenever this output is mounted on a new node, like in JupyterLab
+    // when you click "Create New View for Output"
     //
-    // These changes happen when the frontend adds a new place to render this output,
-    // like in JupyterLab when you open an output in a new window.
-    // by allowing you to handle both these nodes in one function, you can synchronize
-    // views between them without going through the backend or writing to globals
+    // If you don't call before a new node is mounted, then this function is called again for the new node
+    // and rendered independently.
     listenNodeEvents: () => AsyncIterable<NodeEvent>
     // will resolve to error if not connected to kernel
     createComm(targetName: string, data: object): Promise<Comm>;

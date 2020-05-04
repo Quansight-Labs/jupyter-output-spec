@@ -18,10 +18,9 @@ integration for ALL of these separately! It's insane!
 
 Jupyter Widgets gets around this by providing a common base and [uses require.js](https://ipywidgets.readthedocs.io/en/stable/examples/Widget%20Custom.html) (in Classic Notebook and HTML pages) to let you provide custom renderers and it [uses a CDN](https://github.com/jupyter-widgets/ipywidgets/issues/1627) to grab the JS files.
 
-Another way to get around this is to use a more general output, like html, and just embed a bunch of JS in there that creates a DOM node and does what you want.
+Another way to get around this is to use a more general output, like html, and just embed a bunch of JS in there that creates a DOM node and does what you want. However, a limitation of this is that you don't have a way to get access to the kernel, so you can't connect to comms. 
 
-
-However, a limitation of this is that you don't have a way to get access to the kernel, so you can't connect to comms. 
+So today, to support comms on these different renderers you either have to wrap everything in Jupyter Widgets or create specialized renderers for each of these targets.
 
 ## Requirements
 
